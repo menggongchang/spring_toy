@@ -1,6 +1,7 @@
 package com.zm;
 
 import com.zm.beans.factory.BeanFactory;
+import com.zm.beans.factory.xml.XmlBeanDefinitionReader;
 import com.zm.beans.support.DefaultBeanFactory;
 
 /**
@@ -9,7 +10,10 @@ import com.zm.beans.support.DefaultBeanFactory;
  */
 public class Java {
     public static void main(String args[]) {
-        BeanFactory factory = new DefaultBeanFactory("test.xml");
+        DefaultBeanFactory factory = new DefaultBeanFactory();
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+        reader.loadBeanDefinition("test.xml");
+
     }
 
 }

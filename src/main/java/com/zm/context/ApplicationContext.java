@@ -1,10 +1,6 @@
 package com.zm.context;
 
-import com.zm.beans.factory.BeanFactory;
+import com.zm.beans.factory.config.ConfigurableBeanFactory;
 
-public interface ApplicationContext extends BeanFactory {
-    @Override
-    default Object getBean(String beanId) {
-        return null;
-    }
+public interface ApplicationContext extends ConfigurableBeanFactory {
 }

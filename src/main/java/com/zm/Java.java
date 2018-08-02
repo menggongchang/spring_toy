@@ -1,8 +1,8 @@
 package com.zm;
 
-import com.zm.beans.factory.BeanFactory;
 import com.zm.beans.factory.xml.XmlBeanDefinitionReader;
 import com.zm.beans.support.DefaultBeanFactory;
+import com.zm.core.io.FileSystemResource;
 
 /**
  * @author zhoumeng.zm@bytedance.com
@@ -14,6 +14,8 @@ public class Java {
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
         reader.loadBeanDefinition("test.xml");
 
+        FileSystemResource r = new FileSystemResource("/Users/zhoumeng/workplace/spring_toy/src/main/resources/test.xml");
+        System.out.println(r.getDescription());
     }
 
 }

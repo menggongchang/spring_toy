@@ -1,6 +1,10 @@
 package com.zm.beans.support;
 
 import com.zm.beans.BeanDefinition;
+import com.zm.beans.PropertyValue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GenericBeanDefinition implements BeanDefinition {
     private String id;
@@ -8,6 +12,7 @@ public class GenericBeanDefinition implements BeanDefinition {
     private boolean singleton = true;
     private boolean prototype = false;
     private String scope = SCOPE_DEFAULT;
+    private List<PropertyValue> propertyValues = new ArrayList<>();
 
     public GenericBeanDefinition(String id, String className) {
         this.id = id;
@@ -39,6 +44,11 @@ public class GenericBeanDefinition implements BeanDefinition {
     @Override
     public String getBeanClassName() {
         return this.className;
+    }
+
+    @Override
+    public List<PropertyValue> getPropertyValues() {
+        return this.propertyValues;
     }
 
     @Override

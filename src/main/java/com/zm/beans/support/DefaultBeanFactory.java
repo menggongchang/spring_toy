@@ -1,10 +1,16 @@
 package com.zm.beans.support;
 
 import com.zm.beans.BeanDefinition;
+import com.zm.beans.PropertyValue;
 import com.zm.beans.factory.BeanCreationException;
 import com.zm.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.util.ClassUtils;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,6 +56,46 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
     }
 
     private Object createBean(BeanDefinition bd) {
+        //创建实例
+        Object bean = instantiateBean(bd);
+        //设置属性
+        populateBean(bd, bean);
+        return bean;
+    }
+
+    private void populateBean(BeanDefinition bd, Object bean) {
+        List<PropertyValue> pvs = bd.getPropertyValues();
+
+        if (pvs == null || pvs.isEmpty()) {
+            return;
+        }
+
+        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this);
+        SimpleTypeConverter converter = new SimpleTypeConverter();
+        try {
+
+            BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+            PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+
+            for (PropertyValue pv : pvs) {
+                String propertyName = pv.getName();
+                Object originalValue = pv.getValue();
+                Object resolvedValue = valueResolver.resolveValueIfNecessary(originalValue);
+
+                for (PropertyDescriptor pd : pds) {
+                    if (pd.getName().equals(propertyName)) {
+                        Object convertedValue = converter.convertIfNecessary(resolvedValue, pd.getPropertyType());
+                        pd.getWriteMethod().invoke(bean, convertedValue);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            throw new BeanCreationException("Failed to obtain BeanInfo for class [" + bd.getBeanClassName() + "]", ex);
+        }
+    }
+
+    private Object instantiateBean(BeanDefinition bd) {
         ClassLoader classLoader = this.getBeanClassLoader();
         String beanClassName = bd.getBeanClassName();
         try {

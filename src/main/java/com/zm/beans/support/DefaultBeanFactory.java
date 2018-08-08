@@ -96,13 +96,19 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
     }
 
     private Object instantiateBean(BeanDefinition bd) {
-        ClassLoader classLoader = this.getBeanClassLoader();
-        String beanClassName = bd.getBeanClassName();
-        try {
-            Class<?> clz = classLoader.loadClass(beanClassName);
-            return clz.newInstance();//反射
-        } catch (Exception e) {
-            throw new BeanCreationException("Create bean for " + bd.getBeanClassName() + "failed. ", e);
+        //判断是否构造函数注入
+        if (bd.hasConstructorArgumentValues()) {
+            ConstructorResolver resolver = new ConstructorResolver(this);
+            return resolver.autowireConstructor(bd);
+        } else {
+            ClassLoader classLoader = this.getBeanClassLoader();
+            String beanClassName = bd.getBeanClassName();
+            try {
+                Class<?> clz = classLoader.loadClass(beanClassName);
+                return clz.newInstance();//反射
+            } catch (Exception e) {
+                throw new BeanCreationException("Create bean for " + bd.getBeanClassName() + "failed. ", e);
+            }
         }
     }
 

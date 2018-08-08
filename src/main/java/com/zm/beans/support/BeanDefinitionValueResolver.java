@@ -1,14 +1,14 @@
 package com.zm.beans.support;
 
+import com.zm.beans.factory.BeanFactory;
 import com.zm.beans.factory.config.RuntimeBeanReference;
 import com.zm.beans.factory.config.TypedStringValue;
 
 //
-public class BeanDefinitionValueResolver  {
-    private final DefaultBeanFactory beanFactory;
+public class BeanDefinitionValueResolver {
+    private final BeanFactory beanFactory;
 
-    public BeanDefinitionValueResolver(
-            DefaultBeanFactory beanFactory) {
+    public BeanDefinitionValueResolver(BeanFactory beanFactory) {
 
         this.beanFactory = beanFactory;
     }
@@ -21,11 +21,11 @@ public class BeanDefinitionValueResolver  {
             Object bean = this.beanFactory.getBean(refName);
             return bean;
 
-        }else if (value instanceof TypedStringValue) {
+        } else if (value instanceof TypedStringValue) {
             return ((TypedStringValue) value).getValue();
-        } else{
+        } else {
             //TODO
-            throw new RuntimeException("the value " + value +" has not implemented");
+            throw new RuntimeException("the value " + value + " has not implemented");
         }
     }
 

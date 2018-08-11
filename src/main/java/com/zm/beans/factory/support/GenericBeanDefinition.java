@@ -1,4 +1,4 @@
-package com.zm.beans.support;
+package com.zm.beans.factory.support;
 
 import com.zm.beans.BeanDefinition;
 import com.zm.beans.ConstructorArgument;
@@ -18,6 +18,14 @@ public class GenericBeanDefinition implements BeanDefinition {
 
     public GenericBeanDefinition(String id, String className) {
         this.id = id;
+        this.className = className;
+    }
+
+    public GenericBeanDefinition() {
+
+    }
+
+    public void setBeanClassName(String className){
         this.className = className;
     }
 
@@ -61,6 +69,10 @@ public class GenericBeanDefinition implements BeanDefinition {
     @Override
     public boolean hasConstructorArgumentValues() {
         return !this.constructorArgument.isEmpty();
+    }
+
+    public void setId(String id){
+        this.id = id;
     }
 
     @Override

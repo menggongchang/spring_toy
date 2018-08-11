@@ -11,7 +11,7 @@ import java.io.InputStream;
  */
 public class ClassPathResource implements Resource {
 
-    private String path;
+    private String path;//"com/zm/PetStoreService.class"
     private ClassLoader classLoader;
 
     public ClassPathResource(String path) {

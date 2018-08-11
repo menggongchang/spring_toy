@@ -1,4 +1,4 @@
-package com.zm.beans.support;
+package com.zm.beans.factory.support;
 
 import com.zm.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.util.Assert;

@@ -1,7 +1,7 @@
 package com.zm.context.support;
 
 import com.zm.beans.factory.xml.XmlBeanDefinitionReader;
-import com.zm.beans.support.DefaultBeanFactory;
+import com.zm.beans.factory.support.DefaultBeanFactory;
 import com.zm.context.ApplicationContext;
 import com.zm.core.io.Resource;
 import org.springframework.util.ClassUtils;

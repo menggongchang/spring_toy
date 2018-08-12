@@ -3,13 +3,17 @@ package com.zm.beans.factory.support;
 import com.zm.beans.BeanDefinition;
 import com.zm.beans.PropertyValue;
 import com.zm.beans.factory.BeanCreationException;
+import com.zm.beans.factory.config.BeanPostProcessor;
 import com.zm.beans.factory.config.ConfigurableBeanFactory;
+import com.zm.beans.factory.config.DependencyDescriptor;
+import com.zm.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.util.ClassUtils;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,14 +22,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
         implements ConfigurableBeanFactory, BeanDefinitionRegistry {
 
-
+    private List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
     private ClassLoader beanClassLoader;
-
 
     public DefaultBeanFactory() {
     }
 
+    public void addBeanPostProcessor(BeanPostProcessor postProcessor) {
+        this.beanPostProcessors.add(postProcessor);
+    }
+
+    public List<BeanPostProcessor> getBeanPostProcessors() {
+        return this.beanPostProcessors;
+    }
 
     @Override
     public BeanDefinition getBeanDefinition(String beanId) {
@@ -63,13 +73,18 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
         return bean;
     }
 
+    //初始化bean
     private void populateBean(BeanDefinition bd, Object bean) {
-        List<PropertyValue> pvs = bd.getPropertyValues();
+        for(BeanPostProcessor processor : this.getBeanPostProcessors()){
+            if(processor instanceof InstantiationAwareBeanPostProcessor){
+                ((InstantiationAwareBeanPostProcessor)processor).postProcessPropertyValues(bean, bd.getID());
+            }
+        }
 
+        List<PropertyValue> pvs = bd.getPropertyValues();
         if (pvs == null || pvs.isEmpty()) {
             return;
         }
-
         BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this);
         SimpleTypeConverter converter = new SimpleTypeConverter();
         try {
@@ -82,6 +97,7 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
                 Object originalValue = pv.getValue();
                 Object resolvedValue = valueResolver.resolveValueIfNecessary(originalValue);
 
+                //setter注入
                 for (PropertyDescriptor pd : pds) {
                     if (pd.getName().equals(propertyName)) {
                         Object convertedValue = converter.convertIfNecessary(resolvedValue, pd.getPropertyType());
@@ -120,5 +136,32 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
     @Override
     public void setBeanClassLoader(ClassLoader beanClassLoader) {
         this.beanClassLoader = beanClassLoader;
+    }
+
+    //处理bean的依赖，给我一个类型，返回一个实例
+    @Override
+    public Object resolveDependency(DependencyDescriptor descriptor) {
+        Class<?> typeToMatch = descriptor.getDependencyType();
+        for (BeanDefinition bd : this.beanDefinitionMap.values()) {
+            //BeanDefinition只有className的字符串，需要确保BeanDefinition 有Class对象
+            resolveBeanClass(bd);
+            Class<?> beanClass = bd.getBeanClass();
+            if (typeToMatch.isAssignableFrom(beanClass)) {
+                return this.getBean(bd.getID());
+            }
+        }
+        return null;
+    }
+
+    public void resolveBeanClass(BeanDefinition bd) {
+        if (bd.hasBeanClass()) {
+            return;
+        } else {
+            try {
+                bd.resolveBeanClass(this.getBeanClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("can't load class:" + bd.getBeanClassName());
+            }
+        }
     }
 }

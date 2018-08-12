@@ -11,6 +11,8 @@ import org.springframework.beans.SimpleTypeConverter;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+//构造函数注入的处理
+
 public class ConstructorResolver {
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -28,61 +30,47 @@ public class ConstructorResolver {
         Constructor<?> constructorToUse = null;
         Object[] argsToUse = null;
 
-        Class<?> beanClass = null;
+        Class<?> beanClass;
         try {
             beanClass = this.beanFactory.getBeanClassLoader().loadClass(bd.getBeanClassName());
-
         } catch (ClassNotFoundException e) {
             throw new BeanCreationException(bd.getID(), "Instantiation of bean failed, can't resolve class", e);
         }
 
-
         Constructor<?>[] candidates = beanClass.getConstructors();
-
-
-        BeanDefinitionValueResolver valueResolver =
-                new BeanDefinitionValueResolver(this.beanFactory);
+        BeanDefinitionValueResolver valueResolver =new BeanDefinitionValueResolver(this.beanFactory);
 
         ConstructorArgument cargs = bd.getConstructorArgument();
         SimpleTypeConverter typeConverter = new SimpleTypeConverter();
 
         for (int i = 0; i < candidates.length; i++) {
-
             //先判断构造函数的参数个数是否匹配
             Class<?>[] parameterTypes = candidates[i].getParameterTypes();
             if (parameterTypes.length != cargs.getArgumentCount()) {
                 continue;
             }
             argsToUse = new Object[parameterTypes.length];
-
-
             boolean result = this.valuesMatchTypes(parameterTypes,
                     cargs.getArgumentValues(),
                     argsToUse,
                     valueResolver,
                     typeConverter);
-
             if (result) {
                 constructorToUse = candidates[i];
                 break;
             }
-
         }
-
 
         //找不到一个合适的构造函数
         if (constructorToUse == null) {
             throw new BeanCreationException(bd.getID(), "can't find a apporiate constructor");
         }
 
-
         try {
             return constructorToUse.newInstance(argsToUse);
         } catch (Exception e) {
             throw new BeanCreationException(bd.getID(), "can't find a create instance using " + constructorToUse);
         }
-
-
     }
 
     //构造函数的参数类型和xml中配置的相同，按照顺序一一匹配
@@ -91,14 +79,11 @@ public class ConstructorResolver {
                                      Object[] argsToUse,
                                      BeanDefinitionValueResolver valueResolver,
                                      SimpleTypeConverter typeConverter) {
-
-
         for (int i = 0; i < parameterTypes.length; i++) {
             ConstructorArgument.ValueHolder valueHolder
                     = valueHolders.get(i);
             //获取参数的值，可能是TypedStringValue, 也可能是RuntimeBeanReference
             Object originalValue = valueHolder.getValue();
-
             try {
                 //获得真正的值
                 Object resolvedValue = valueResolver.resolveValueIfNecessary(originalValue);

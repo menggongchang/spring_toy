@@ -1,7 +1,8 @@
 package service;
 
+import com.zm.beans.factory.annotation.Autowired;
 import com.zm.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
+
 
 @Component(value = "petStore")
 public class PetStoreService {

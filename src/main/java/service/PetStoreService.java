@@ -19,4 +19,11 @@ public class PetStoreService {
         return itemDao;
     }
 
+
+    public void placeOrder() {
+        System.out.println("place order");
+        MessageTracker.addMsg("place order");
+
+    }
+
 }

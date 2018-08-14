@@ -8,6 +8,7 @@ import com.zm.beans.factory.config.ConfigurableBeanFactory;
 import com.zm.beans.factory.config.DependencyDescriptor;
 import com.zm.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.SimpleTypeConverter;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.util.ClassUtils;
 
 import java.beans.BeanInfo;
@@ -63,6 +64,16 @@ public class DefaultBeanFactory extends DefaultSingtonBeanRegistry
             return bean;
         }
         return createBean(beanDefinition);
+    }
+
+    @Override
+    public Class<?> getType(String beanId) throws NoSuchBeanDefinitionException {
+        BeanDefinition bd = this.getBeanDefinition(beanId);
+        if (bd == null){
+            throw new NoSuchBeanDefinitionException(beanId);
+        }
+        resolveBeanClass(bd);
+        return bd.getBeanClass();
     }
 
     private Object createBean(BeanDefinition bd) {
